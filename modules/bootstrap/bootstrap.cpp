@@ -4,25 +4,35 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
+#include "scene/main/window.h"
 
 Bootstrap::Bootstrap() {
 }
 
-void Bootstrap::run_startup_scripts() {
+void Bootstrap::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("run"), &Bootstrap::run);
+}
+
+void Bootstrap::_notification(int p_what) {
+	if (p_what == NOTIFICATION_READY && !_initialized) {
+		_initialized = true;
+		run();
+	}
+}
+
+void Bootstrap::run() {
 	String script_dir = GLOBAL_GET("bootstrap/script_directory");
 
 	if (!_is_valid_script_path(script_dir)) {
-		WARN_PRINT("Bootstrap: invalid script directory: " + script_dir);
+		WARN_PRINT("[BOOTSTRAP] invalid script directory: " + script_dir);
 		return;
 	}
 
 	Ref<DirAccess> dir = DirAccess::open(script_dir);
 	if (dir.is_null()) {
-		ERR_PRINT("Bootstrap: failed to open script directory: " + script_dir);
+		ERR_PRINT("[BOOTSTRAP] failed to open script directory: " + script_dir);
 		return;
 	}
-
-	print_line("Bootstrap: running scripts from " + script_dir + "...");
 	dir->list_dir_begin();
 
 	String file_name = dir->get_next();
@@ -30,7 +40,7 @@ void Bootstrap::run_startup_scripts() {
 		if (!dir->current_is_dir()) {
 			if (file_name.ends_with(".gd")) {
 				String script_path = script_dir.path_join(file_name);
-				print_line("Bootstrap: running script: " + script_path);
+				print_line("[BOOTSTRAP] running script: " + script_path);
 				execute_script(script_path);
 			}
 		}
@@ -38,27 +48,29 @@ void Bootstrap::run_startup_scripts() {
 	}
 
 	dir->list_dir_end();
-	print_line("Bootstrap: completed.");
+	print_line("[BOOTSTRAP] completed.");
+	queue_free();
 }
 
 void Bootstrap::execute_script(const String &p_path) {
 	Ref<Script> script = ResourceLoader::load(p_path);
 
 	if (script.is_null()) {
-		ERR_PRINT("Bootstrap: failed to load script: " + p_path);
+		ERR_PRINT("[BOOTSTRAP] failed to load script: " + p_path);
 		return;
 	}
 
     Node *instance = memnew(Node);
 	instance->set_script(script);
+	add_child(instance);
 
 	if (instance->has_method("_exec")) {
 		instance->call("_exec");
 	} else {
-		WARN_PRINT("Bootstrap: script does not have _exec() method: " + p_path);
+		WARN_PRINT("[BOOTSTRAP] script does not have _exec() method: " + p_path);
 	}
 
-	memdelete(instance);
+	instance->queue_free();
 }
 
 bool Bootstrap::_is_valid_script_path(const String &p_path) {

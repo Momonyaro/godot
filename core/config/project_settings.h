@@ -109,6 +109,7 @@ protected:
 
 	LocalVector<String> hidden_prefixes;
 	HashMap<StringName, AutoloadInfo> autoloads;
+	HashMap<StringName, Object*> services;
 	HashMap<StringName, String> global_groups;
 	HashMap<StringName, HashSet<StringName>> scene_groups_cache;
 
@@ -224,6 +225,11 @@ public:
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
 	void fix_autoload_paths();
+
+	const HashMap<StringName, Object*> &get_service_list() const;
+	void add_service(const StringName &key, Object &obj);
+	void remove_service(const StringName &key);
+	bool has_service(const StringName &key) const;
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);

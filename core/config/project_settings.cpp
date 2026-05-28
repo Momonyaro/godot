@@ -1501,6 +1501,31 @@ bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
 	return autoloads.has(p_autoload);
 }
 
+const HashMap<StringName, Object*> &ProjectSettings::get_service_list() const {
+	return services;
+}
+
+void ProjectSettings::add_service(const StringName &key, Object &obj) {
+	if (has_service(key))
+		return;
+
+	services[key] = &obj;
+}
+
+void ProjectSettings::remove_service(const StringName &key) {
+	if (has_service(key) == false)
+		return;
+
+	services.erase(key);
+}
+
+bool ProjectSettings::has_service(const StringName &key) const {
+	if (services.has(key))
+		return true;
+
+	return false;
+}
+
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
 	return autoloads[p_name];

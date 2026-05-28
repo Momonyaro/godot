@@ -4460,6 +4460,13 @@ int Main::start() {
 					}
 				}
 
+				// Here, let's inject the services alongside autoloaded components
+				for (const KeyValue<StringName, Object*> &S : ProjectSettings::get_singleton()->get_service_list()) {
+					Object *service = S.value;
+
+					to_add.push_back(Object::cast_to<Node>(service));
+				}
+
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}

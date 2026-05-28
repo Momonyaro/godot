@@ -16,14 +16,16 @@ void initialize_bootstrap_module(ModuleInitializationLevel p_level) {
 	// Register setting if it doesn't exist
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "bootstrap/script_directory", PROPERTY_HINT_DIR), "res://bootstrap");
 
-	bootstrap = memnew(Bootstrap);
+	if (bootstrap) { return; }
 
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Bootstrap", bootstrap));
+	bootstrap = memnew(Bootstrap);
+	ProjectSettings::get_singleton()->add_service("Bootstrap", *bootstrap);
 }
 
 void uninitialize_bootstrap_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) { return; }
 
+	ProjectSettings::get_singleton()->remove_service("Bootstrap");
 	if (bootstrap) {
 		memdelete(bootstrap);
 	}
