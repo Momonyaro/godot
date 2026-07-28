@@ -38,6 +38,7 @@ void Bootstrap::run() {
 	String file_name = dir->get_next();
 	while(file_name.is_empty() == false) {
 		if (!dir->current_is_dir()) {
+			file_name = file_name.trim_suffix(".remap");
 			if (file_name.ends_with(".gd")) {
 				String script_path = script_dir.path_join(file_name);
 				print_line("[BOOTSTRAP] running script: " + script_path);
@@ -49,7 +50,6 @@ void Bootstrap::run() {
 
 	dir->list_dir_end();
 	print_line("[BOOTSTRAP] completed.");
-	queue_free();
 }
 
 void Bootstrap::execute_script(const String &p_path) {

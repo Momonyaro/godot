@@ -33,6 +33,7 @@ void uninitialize_bootstrap_module(ModuleInitializationLevel p_level) {
 	ProjectSettings::get_singleton()->remove_service(SERVICE_NAME);
 
 	if (bootstrap) {
-		memdelete(bootstrap);
+		bootstrap->queue_free();
+		bootstrap = nullptr;
 	}
 }
